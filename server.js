@@ -1,13 +1,13 @@
 const express = require("express");
 const app = express();
 
-const { mongoClient } = require("./conn");
+const {mongoClient}  = require("./conn");
 app.use(express.json());
 
 const port = process.env.PORT || 5000;
 
 
-mongoClient();
+
 
 
 app.get('/api/masterlist', async(req, res) => {

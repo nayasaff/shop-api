@@ -36,7 +36,4 @@ const mongoClient = async () => {
   return dbConnection;
 };
 
-module.exports = {
-  mongoClient,
-  ObjectID,
-};
+module.exports.mongoClient = mongoClient;
