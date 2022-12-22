@@ -64,6 +64,8 @@ app.get('/api/tickets', async(req,res)=>{
 
 })
 
+
+//updating master list in case of pending a ticket
 app.patch('/api/masterlist/:object', async(req, res)=>{
   
   const db = await mongoClient();
@@ -90,6 +92,7 @@ app.patch('/api/masterlist/:object', async(req, res)=>{
 
 })
 
+//in case of cancelled payment increasing number of tickets
 app.delete('/api/masterlist/:object', async(req, res)=>{
   
   const db = await mongoClient();
