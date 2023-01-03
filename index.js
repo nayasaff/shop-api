@@ -71,23 +71,18 @@ app.get('/api/masterlist/:id', async(req,res)=>{
 
 })
 
-app.post('/master', async(req,res)=>{
-  const db = await mongoClient();
-  const data = db.collection("master_list").insertMany(req.body)
-  console.log(data)
-  res.json("ee")
-})
 
 
-app.get('/api/tickets', async(req,res)=>{
+
+app.get('/api/reservation', async(req,res)=>{
   try{
     const db = await mongoClient();
     const id = req.params.id;
     
-    const data = await db.collection("tickets").find({}).toArray();
+    const data = await db.collection("reservation").find({}).toArray();
     
     if(!data)
-      res.json("No tickets available")
+      res.json("No reservation available")
     else  
       res.status(200).json(data);
   }
@@ -165,7 +160,8 @@ app.post("/api/reservation", async(req,res)=>{
   if(data)
     res.json(data)
   else
-    res.json("Failed to insert data")
+    res.json("Failed to insert data")                                                   
+
 })
 
 app.listen(port, () => {
