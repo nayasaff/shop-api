@@ -6,10 +6,13 @@
     "init": "^0.1.2",
     "mongodb": "^4.13.0"
   },
+  "engines" :{
+    "version" : "14.x"
+  },
   "devDependencies": {
     "nodemon": "^2.0.20"
   },
   "scripts": {
-    "dev": "nodemon api/index.js"
+    "start": "node index.js"
   }
 }

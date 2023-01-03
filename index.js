@@ -3,7 +3,7 @@ const app = express();
 const cors=require("cors");
 const {mongoClient}  = require("./db");
 
-app.use(express.json());
+
 
 const port = process.env.PORT || 5000;
 
@@ -35,6 +35,7 @@ app.use(function (req, res, next) {
 });
 
 app.use(cors({ origin : '*'}));
+app.use(express.json());
 
 app.get('/api/masterlist', async(req, res) => {
     
@@ -70,6 +71,12 @@ app.get('/api/masterlist/:id', async(req,res)=>{
 
 })
 
+app.post('/master', async(req,res)=>{
+  const db = await mongoClient();
+  const data = db.collection("master_list").insertMany(req.body)
+  console.log(data)
+  res.json("ee")
+})
 
 
 app.get('/api/tickets', async(req,res)=>{
@@ -92,26 +99,32 @@ app.get('/api/tickets', async(req,res)=>{
 
 
 //updating master list in case of pending a ticket
+
+//use da http://localhost:4000/api/masterlist/{"matchNumber": 1, "count": 2, "category": 1}
 app.patch('/api/masterlist/:object', async(req, res)=>{
   
   const db = await mongoClient();
+
    const object2 = JSON.parse(req.params.object);
+   
    const matchNo = object2.matchNumber;
    const count = object2.count
    const category = object2.category;
-  console.log(matchNo + " " + count)
+  console.log("values is " +matchNo + " " + count)
   
   if(category === 1){
     const data = await db.collection("master_list").updateOne({"matchNumber" : matchNo}, 
-    {$inc : { "availability.category1.count"  : -count} }) 
+    {$inc : { "availability.category1.available": -count}, $inc :{"availability.category1.pending" :count } }) 
   }
   else if(category ===2){
     const data = await db.collection("master_list").updateOne({"matchNumber" : matchNo}, 
-    {$inc : { "availability.category2.count"  : -count} })     
+     {$inc : { "availability.category2.available"  : -count, 
+    "availability.category2.pending" : count}  })     
   }
   else{
     const data = await db.collection("master_list").updateOne({"matchNumber" : matchNo}, 
-    {$inc : { "availability.category3.count"  : -count} }) 
+    {$inc : { "availability.category3.available"  : -count, "availability.category3.pending" :count }}) 
+    
   }
 
   res.json("Changes done")
@@ -130,21 +143,30 @@ app.delete('/api/masterlist/:object', async(req, res)=>{
   
   if(category === 1){
     const data = await db.collection("master_list").updateOne({"matchNumber" : matchNo}, 
-    {$inc : { "availability.category1.count"  : count} }) 
+    {$inc : { "availability.category1.available"  : count ,"availability.category1.pending" :-count} }) 
   }
   else if(category ===2){
     const data = await db.collection("master_list").updateOne({"matchNumber" : matchNo}, 
-    {$inc : { "availability.category2.count"  : count} })     
+    {$inc : { "availability.category2.available"  : count , "availability.category2.pending" :-count}})     
   }
   else{
     const data = await db.collection("master_list").updateOne({"matchNumber" : matchNo}, 
-    {$inc : { "availability.category3.count"  : count} }) 
+    {$inc : { "availability.category3.available"  : count, "availability.category3.pending" : -count} }) 
   }
 
   res.json("Changes done")
 
 })
 
+app.post("/api/reservation", async(req,res)=>{
+  const db = await mongoClient();
+  const reservation = req.body
+  const data = db.collection("reservation").insertOne(reservation)
+  if(data)
+    res.json(data)
+  else
+    res.json("Failed to insert data")
+})
 
 app.listen(port, () => {
   // perform a database connection when server starts
