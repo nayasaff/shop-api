@@ -110,13 +110,7 @@ app.patch('/api/masterlist/:object', async(req, res)=>{
     {$inc : { "availability.category3.available"  : -count, "availability.category3.pending" :count }}) 
     
   }
-  let item = 0;
-  for(let i =0; i < list.length; i++){
-    if(list.matchNumber === matchNo)
-      item = i;
-  }
-  list[item].availability[`category${category}`].available -= count
-  list[item].availability[`category${category}`].pending += count
+
   res.json(data)
 
 })
@@ -187,7 +181,7 @@ app.post('/api/analytics', async(req, res) => {
 app.get("/delete", async(req,res)=>{
   const db = await mongoClient()
   const data = req.body 
-  await db.collection("master_list").insertMany(req.body)
+  await db.collection("analytics").insertMany(req.body)
   res.json("done")
 })
 
