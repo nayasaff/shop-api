@@ -11,30 +11,20 @@ const port = process.env.PORT || 5000;
 mongoClient();
 
 
-app.use(function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", value="*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  res.header("Access-Control-Allow-Methods","POST,PATCH,GET,DELETE");
-  next();
+var corsOptions = {
+  origin: 'http://localhost:3300',
+  credentials : true
+ }
+
+app.use(cors(corsOptions));
+
+app.use(function (req, res, next) {	
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3300');    
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');    
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');   
+    res.setHeader('Access-Control-Allow-Credentials', true);    
+    next();
 });
-
-app.use(function (req, res, next) {
-
-  // Request methods you wish to allow
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-
-  // Request headers you wish to allow
-  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-
-  // Set to true if you need the website to include cookies in the requests sent
-  // to the API (e.g. in case you use sessions)
-  res.setHeader('Access-Control-Allow-Credentials', true);
-
-  // Pass to next layer of middleware
-  next();
-});
-
-app.use(cors({ origin : '*'}));
 app.use(express.json());
 
 app.get('/api/masterlist', async(req, res) => {
@@ -75,20 +65,19 @@ app.get('/api/masterlist/:id', async(req,res)=>{
 
 
 app.get('/api/reservation', async(req,res)=>{
+ 
+
   try{
+    // database and collection code goes here
     const db = await mongoClient();
-    const id = req.params.id;
+    const data = await db.collection("reservation").find({}).toArray() ;
+   
+    res.status(200).json(data)
     
-    const data = await db.collection("reservation").find({}).toArray();
-    
-    if(!data)
-      res.json("No reservation available")
-    else  
-      res.status(200).json(data);
-  }
-  catch(e){
-    console.log(e);
-  }
+}
+catch(e){
+  console.log(e)
+}
 
 })
 
@@ -105,7 +94,7 @@ app.patch('/api/masterlist/:object', async(req, res)=>{
    const matchNo = object2.matchNumber;
    const count = object2.count
    const category = object2.category;
-  console.log("values is " +matchNo + " " + count)
+  
   let data = {}
   if(category === 1){
     data = await db.collection("master_list").updateOne({"matchNumber" : matchNo}, 
@@ -179,17 +168,28 @@ app.post("/api/reservation", async(req,res)=>{
 })
 
 app.post('/api/analytics', async(req, res) => {
+  res.setHeader('Content-Type', 'application/json');
   const db= await mongoClient();
   const object2 = req.body
-   const data= db.collection("analytics").insertOne(object2)
-   if(data)
-     res.json("changes done")
-   else
-     res.json("Could not insert in analytics")
+  if(object2.body.matchNumber > 64){
+    res.json("Ticket number not found")
+  }
+  else{
+    const data= db.collection("analytics").insertOne(object2)
+    if(data)
+      res.json("changes done")
+    else
+      res.json("Could not insert in analytics")
+  }
  
   })
 
-
+app.get("/delete", async(req,res)=>{
+  const db = await mongoClient()
+  const data = req.body 
+  await db.collection("master_list").insertMany(req.body)
+  res.json("done")
+})
 
 app.listen(port, () => {
   // perform a database connection when server starts
